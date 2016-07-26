@@ -4,6 +4,14 @@
 .float-right{
   float:right;
 }
+
+.hidden {
+  display: none;
+}
+
+.results-container {
+  display: inline-block;
+}
 .result-shown{
   width:100%;
 }
@@ -32,5 +40,5 @@ dd {
 }
 
 .highlight {
-  background-color: yellow;  
+  background-color: blue;  
 }

@@ -28,15 +28,23 @@ Template.list.onRendered(function listOnRendered() {
 });
 
 ListInterface = {
+	Items: [],
+
+	Mod: 2,
+	ModIndex: 0,
+
 	Init: function () {
 		$("#sort").on("change", function () {
+			$("#results-container").find("div.result").removeClass("hidden");
 			ListInterface.Sort(parseInt($(this).val()));
+			ListInterface.BuildMods(true);
 		});
 		$("#search").on("keyup", function () {
 			ListInterface.Search($(this).val());
+			ListInterface.BuildMods(true);
 		});
 
-		$("#results-container").find("div.result").each(function () {
+		$("#results-container").find("div.result").each(function (index, element) {
 			$(this).on("click", function () {
 				console.log($(this).attr("data-sort-key"));
 			});
@@ -49,6 +57,95 @@ ListInterface = {
 		});
 
 		ListInterface.Sort(parseInt($("#sort").val()));
+
+		$("#prev").on("click", function () {
+			ListInterface.ModIndex = ListInterface.ModIndex - 1;
+			ListInterface.ApplyMod();
+
+			/*
+			if (ListInterface.ModIndex === 0) {
+				$(this).prop("disabled", true);
+			}
+			else {
+				ListInterface.ApplyMod();
+			}
+			*/
+		});
+		$("#next").on("click", function () {
+			ListInterface.ModIndex += 1;
+			ListInterface.ApplyMod();
+
+			/*
+			if (ListInterface.ModIndex === 0) {
+				$(this).prop("disabled", true);
+			}
+			else {
+				ListInterface.ApplyMod();
+			}
+			*/
+		});
+
+		ListInterface.BuildMods(false);
+	},
+
+	BuildMods: function (visibleOnly) {
+		if (typeof visibleOnly !== "boolean") {
+			visibleOnly = false;
+		}
+
+		var dataModId = 0;
+		$("#results-container").find("div.result").each(function (index, element) {
+			if (visibleOnly) {
+				if (!$(this).hasClass("hidden")) {
+					$(this).attr("data-mod-id", dataModId);
+					dataModId += 1;
+				}
+				else {
+					$(this).attr("data-mod-id", null);
+				}
+			}
+			else {
+				$(this).attr("data-mod-id", dataModId);
+				dataModId += 1;
+			}
+		});
+
+		ListInterface.ApplyMod();
+	},
+
+	ApplyMod: function () {
+		/*
+		for (var i = 0; i < ListInterface.Items.length; i++) {
+			var item = ListInterface.Items[i];
+			var id = item.attr("data-item-id");
+			if ((id % ListInterface.Mod) === ListInterface.ModIndex) {
+				$(item).css("display", "");
+			}
+			else {
+				$(item).css("display", "none");
+			}
+		}
+		*/
+
+		var startIndex = ListInterface.Mod * ListInterface.ModIndex;
+		var endIndex = startIndex + ListInterface.Mod;
+		$("#results-container").find("div.result").each(function (index, element) {
+			var rawId = parseInt($(element).attr("data-mod-id"));
+			if ((rawId !== null) && (rawId !== "")) {
+				var id = rawId;
+				if ((id >= startIndex) && (id < endIndex)) {
+					$(element).removeClass("hidden");
+				}
+				else {
+					$(element).addClass("hidden");
+				}
+			}
+			else {
+				if (!$(element).hasClass("hidden")) {
+					$(element).addClass("hidden");
+				}
+			}
+		});
 	},
 
 	Search: function (token) {
@@ -58,7 +155,7 @@ ListInterface = {
 	        	$(this).find(".searchable-content").each(function () {
 					$(this).html($(this).data("data-searchable-content"));
 				});
-	            $(this).css("display", "block");
+				$(this).removeClass("hidden");
 	        });
 
 	        return;
@@ -68,7 +165,7 @@ ListInterface = {
 	    	$(this).find(".searchable-content").each(function () {
 				$(this).html($(this).data("data-searchable-content"));
 			});
-	    	$(this).css("display", "none")
+			$(this).addClass("hidden");
     	});
 	    var token = token.trim().toLowerCase();
 
@@ -89,7 +186,7 @@ ListInterface = {
 				if (searchableDisplay) {
 					// Store original searchable content for re use if not found
 					var resultHTML = searchableDisplay;
-					var searchable = searchableDisplay.trim().toLowerCase();
+					var searchable = searchableDisplay.toLowerCase();
 					
 					// Identify a matched token
 					if (searchable.indexOf(token) > -1) {
@@ -135,7 +232,7 @@ ListInterface = {
 
 			// Display the result container if found token
 			if (showResult) {
-				$(result).css("display", "block");
+				$(result).removeClass("hidden");
 			}
     	});
 	},
