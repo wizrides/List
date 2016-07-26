@@ -1,0 +1,36 @@
+.float-left{
+  float:left;
+}
+.float-right{
+  float:right;
+}
+.result-shown{
+  width:100%;
+}
+.result-left{
+  width:70%;  
+  padding-right:40px;
+}
+.result-right{
+  width:25%;
+}
+dt {
+  float:left;
+  margin-right:5px;
+  font-weight: bold;
+}
+.result-title{
+  float:none;
+  display:block;
+  margin-right:auto;
+}
+dd {
+  display:block;
+}
+.result-subtitle {
+  margin-left:0px;
+}
+
+.highlight {
+  background-color: yellow;  
+}
