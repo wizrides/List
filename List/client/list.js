@@ -37,11 +37,14 @@ ListInterface = {
 		$("#sort").on("change", function () {
 			$("#results-container").find("div.result").removeClass("hidden");
 			ListInterface.Sort(parseInt($(this).val()));
+			ListInterface.Search($("#search").val());
 			ListInterface.BuildMods(true);
+			ListInterface.ApplyMod();
 		});
 		$("#search").on("keyup", function () {
 			ListInterface.Search($(this).val());
 			ListInterface.BuildMods(true);
+			ListInterface.ApplyMod();
 		});
 
 		$("#results-container").find("div.result").each(function (index, element) {
@@ -86,6 +89,7 @@ ListInterface = {
 		});
 
 		ListInterface.BuildMods(false);
+		ListInterface.ApplyMod();
 	},
 
 	BuildMods: function (visibleOnly) {
@@ -109,8 +113,6 @@ ListInterface = {
 				dataModId += 1;
 			}
 		});
-
-		ListInterface.ApplyMod();
 	},
 
 	ApplyMod: function () {
