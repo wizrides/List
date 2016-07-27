@@ -28,9 +28,7 @@ Template.list.onRendered(function listOnRendered() {
 });
 
 ListInterface = {
-	Items: [],
-
-	Mod: 2,
+	Mod: 3,
 	ModIndex: 0,
 
 	Init: function () {
@@ -64,28 +62,10 @@ ListInterface = {
 		$("#prev").on("click", function () {
 			ListInterface.ModIndex = ListInterface.ModIndex - 1;
 			ListInterface.ApplyMod();
-
-			/*
-			if (ListInterface.ModIndex === 0) {
-				$(this).prop("disabled", true);
-			}
-			else {
-				ListInterface.ApplyMod();
-			}
-			*/
 		});
 		$("#next").on("click", function () {
 			ListInterface.ModIndex += 1;
 			ListInterface.ApplyMod();
-
-			/*
-			if (ListInterface.ModIndex === 0) {
-				$(this).prop("disabled", true);
-			}
-			else {
-				ListInterface.ApplyMod();
-			}
-			*/
 		});
 
 		ListInterface.BuildMods(false);
@@ -113,29 +93,28 @@ ListInterface = {
 				dataModId += 1;
 			}
 		});
+
+		var numDisplayed = 0;
+		$("#results-container").find("div.result").each(function (index, element) {
+			if (!$(this).hasClass("hidden")) {
+				numDisplayed += 1;
+			}
+		});
+
+		var startIndex = ListInterface.Mod * ListInterface.ModIndex;
+		if (startIndex > (numDisplayed - 1)) {
+			ListInterface.ModIndex = 0;
+		}
 	},
 
 	ApplyMod: function () {
-		/*
-		for (var i = 0; i < ListInterface.Items.length; i++) {
-			var item = ListInterface.Items[i];
-			var id = item.attr("data-item-id");
-			if ((id % ListInterface.Mod) === ListInterface.ModIndex) {
-				$(item).css("display", "");
-			}
-			else {
-				$(item).css("display", "none");
-			}
-		}
-		*/
-
 		var startIndex = ListInterface.Mod * ListInterface.ModIndex;
-		var endIndex = startIndex + ListInterface.Mod;
+		var endIndex = startIndex + (ListInterface.Mod - 1);
 		$("#results-container").find("div.result").each(function (index, element) {
 			var rawId = parseInt($(element).attr("data-mod-id"));
 			if ((rawId !== null) && (rawId !== "")) {
 				var id = rawId;
-				if ((id >= startIndex) && (id < endIndex)) {
+				if ((id >= startIndex) && (id <= endIndex)) {
 					$(element).removeClass("hidden");
 				}
 				else {
@@ -148,6 +127,41 @@ ListInterface = {
 				}
 			}
 		});
+
+		if (ListInterface.ModIndex === 0) {
+			// First mod
+			$("#prev").prop("disabled", true);
+		}
+		else {
+			$("#prev").prop("disabled", false);
+		}
+
+		var numItems = 0;
+		var numDisplayed = 0;
+		$("#results-container").find("div.result").each(function (index, element) {
+			numItems += 1;
+			if (!$(this).hasClass("hidden")) {
+				numDisplayed += 1;
+			}
+		});
+
+		if (numItems <= ListInterface.Mod) {
+			// Not enough items to enable multiple mods
+			$("#next").prop("disabled", true);
+		}
+		else if (endIndex === (numItems - 1)) {
+			// Last mod full
+			$("#next").prop("disabled", true);
+		}
+		else if (numDisplayed < ListInterface.Mod) {
+			// Last mode with less than mod displayed
+			$("#next").prop("disabled", true);
+		}
+		else {
+			$("#next").prop("disabled", false);
+		}
+
+		$("#mod").text(ListInterface.ModIndex + 1);
 	},
 
 	Search: function (token) {
