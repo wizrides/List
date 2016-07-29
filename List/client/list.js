@@ -24,14 +24,19 @@ Template.hello.events({
 */
 
 Template.list.onRendered(function listOnRendered() {
+	ListInterfaceHelper.Init();
 	ListInterface.Init();
 });
 
 ListInterface = {
-	Mod: 3,
+	Defaults: {
+		Mod: 5
+	},
+	Mod: 5,
 	ModIndex: 0,
 
 	Init: function () {
+		ListInterface.Mod = ListInterface.Defaults.Mod;
 		$("#sort").on("change", function () {
 			$("#results-container").find("div.result").removeClass("hidden");
 			ListInterface.Sort(parseInt($(this).val()));
@@ -41,6 +46,12 @@ ListInterface = {
 		});
 		$("#search").on("keyup", function () {
 			ListInterface.Search($(this).val());
+			ListInterface.BuildMods(true);
+			ListInterface.ApplyMod();
+		});	
+		$("#search-button").click(function (e) {
+			e.preventDefault();
+			ListInterface.Search($("#search").val());
 			ListInterface.BuildMods(true);
 			ListInterface.ApplyMod();
 		});
@@ -59,11 +70,11 @@ ListInterface = {
 
 		ListInterface.Sort(parseInt($("#sort").val()));
 
-		$("#prev").on("click", function () {
+		$(".list-btn-prev").on("click", function () {
 			ListInterface.ModIndex = ListInterface.ModIndex - 1;
 			ListInterface.ApplyMod();
 		});
-		$("#next").on("click", function () {
+		$(".list-btn-next").on("click", function () {
 			ListInterface.ModIndex += 1;
 			ListInterface.ApplyMod();
 		});
@@ -72,6 +83,22 @@ ListInterface = {
 		ListInterface.ApplyMod();
 	},
 
+	SetMod: function(newMod, keepPlace) {
+		if (typeof keepPlace !== "boolean") {
+			keepPlace = false;
+		}
+		var newModIndex = 0;
+		if(keepPlace) {
+			var oldMod = ListInterface.Mod;
+			var oldModIndex = ListInterface.ModIndex;
+			var newModIndex = Math.floor(((oldModIndex * oldMod) / newMod));
+		}
+		ListInterface.Mod = newMod;
+		ListInterface.ModIndex = newModIndex;
+		ListInterface.BuildMods(true);
+		ListInterface.ApplyMod();
+	},
+	
 	BuildMods: function (visibleOnly) {
 		if (typeof visibleOnly !== "boolean") {
 			visibleOnly = false;
@@ -115,53 +142,57 @@ ListInterface = {
 			if ((rawId !== null) && (rawId !== "")) {
 				var id = rawId;
 				if ((id >= startIndex) && (id <= endIndex)) {
-					$(element).removeClass("hidden");
+					$(element).removeClass("not-in-page");
 				}
 				else {
-					$(element).addClass("hidden");
+					$(element).addClass("not-in-page");
 				}
 			}
 			else {
-				if (!$(element).hasClass("hidden")) {
-					$(element).addClass("hidden");
+				if (!$(element).hasClass("not-in-page")) {
+					$(element).addClass("not-in-page");
 				}
 			}
 		});
 
 		if (ListInterface.ModIndex === 0) {
 			// First mod
-			$("#prev").prop("disabled", true);
+			$(".list-btn-prev").prop("disabled", true);
 		}
 		else {
-			$("#prev").prop("disabled", false);
+			$(".list-btn-prev").prop("disabled", false);
 		}
 
 		var numItems = 0;
-		var numDisplayed = 0;
+		var numVisible = 0;
+		var numInPage = 0;
 		$("#results-container").find("div.result").each(function (index, element) {
 			numItems += 1;
 			if (!$(this).hasClass("hidden")) {
-				numDisplayed += 1;
+				numVisible += 1;
+			}
+			if (!$(this).hasClass("not-in-page")) {
+				numInPage += 1;
 			}
 		});
-
-		if (numItems <= ListInterface.Mod) {
-			// Not enough items to enable multiple mods
-			$("#next").prop("disabled", true);
-		}
-		else if (endIndex === (numItems - 1)) {
-			// Last mod full
-			$("#next").prop("disabled", true);
-		}
-		else if (numDisplayed < ListInterface.Mod) {
-			// Last mode with less than mod displayed
-			$("#next").prop("disabled", true);
+		
+		//Add one to endIndex for this check, since the nth item has index (n-1)
+		if (numVisible <= (endIndex+1)) {
+			$(".list-btn-next").prop("disabled", true);
 		}
 		else {
-			$("#next").prop("disabled", false);
+			$(".list-btn-next").prop("disabled", false);
 		}
 
-		$("#mod").text(ListInterface.ModIndex + 1);
+		if(numVisible > 0) {
+			if(numVisible != numItems) {
+				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " + (numVisible) + " results (" + (numItems) + " total)");
+			} else {
+				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " + (numVisible) + " items");
+			}
+		} else {
+			$(".list-lbl-mod").text("No results");
+		}
 	},
 
 	Search: function (token) {
@@ -223,7 +254,7 @@ ListInterface = {
 							var tokenDisplay = sliceDisplay.slice(index, index + token.length);
 
 							// Apply highlighting html to matched token
-							var highlightSpan = "<span class=\"highlight\">" + tokenDisplay + "</span>";
+							var highlightSpan = "<span class=\"blue-highlight\">" + tokenDisplay + "</span>";
 
 							// Update html display with currnet display slice with matched token replaced with html
 							resultHTML += sliceDisplay.replace(tokenDisplay, highlightSpan);
@@ -364,5 +395,101 @@ ListInterface = {
 		}
 
 		return sort;
+	}
+};
+
+ListInterfaceHelper = {
+	Init: function () {
+		$("#set-mod").val(ListInterface.Defaults.Mod);
+		$("#btn-set-mod").on("click", function () {
+			var mod = parseInt($("#set-mod").val());
+
+			if (mod > 0) {
+				ListInterface.SetMod(mod, true);
+			}
+		});
+
+		var count = 100;
+		for (var i = 1; i <= count; i++) {
+			var title = "Title " + i;
+			var subTitle = "Sub Title " + i;
+			var themeLabel = "Science Theme:";
+			var theme = "theme " + i + ";";
+			var timeRangeLabel = "Time range:";
+			var timeRange = (2000 + i) + " - " + (2000 + (i + count));
+			var locationLabel = "Locations:";
+			var location = "CO" + i + ";";
+
+			var dataSortKey = {
+				alpha: title,
+				numeric: (2000 + i).toString()
+			};
+			var dataSortKeyString = JSON.stringify(dataSortKey);
+
+			var result = document.createElement("div");
+			result.setAttribute("class", "result");
+			result.setAttribute("data-sort-key", dataSortKeyString);
+
+			var resultDisplayContainer = document.createElement("div");
+			resultDisplayContainer.setAttribute("class", "result-shown");
+
+			var resultLeftContainer = document.createElement("div");
+			resultLeftContainer.setAttribute("class", "result-left float-left");
+
+			var dlLeftContainer = document.createElement("dl");
+
+			var titleElement = document.createElement("dt");
+			titleElement.setAttribute("class", "result-title searchable-content");
+			titleElement.innerHTML = title;
+			var subTitleElement = document.createElement("dd");
+			subTitleElement.setAttribute("class", "result-subtitle searchable-content");
+			subTitleElement.innerHTML = subTitle;
+
+			dlLeftContainer.appendChild(titleElement);
+			dlLeftContainer.appendChild(subTitleElement);
+
+			var themeLabelElement = document.createElement("dt");
+			themeLabelElement.innerHTML = themeLabel;
+			var themeElement = document.createElement("dd");
+			themeElement.setAttribute("class", "searchable-content");
+			themeElement.innerHTML = theme;
+
+			dlLeftContainer.appendChild(themeLabelElement);
+			dlLeftContainer.appendChild(themeElement);
+
+			var locationLabelElement = document.createElement("dt");
+			locationLabelElement.innerHTML = locationLabel;
+			var locationElement = document.createElement("dd");
+			locationElement.setAttribute("class", "searchable-content");
+			locationElement.innerHTML = location;
+
+			dlLeftContainer.appendChild(locationLabelElement);
+			dlLeftContainer.appendChild(locationElement);
+
+			resultLeftContainer.appendChild(dlLeftContainer);
+
+			var resultRightContainer = document.createElement("div");
+			resultRightContainer.setAttribute("class", "result-right float-right");
+
+			var dlRightContainer = document.createElement("dl");
+
+			var timeRangeLabelElement = document.createElement("dt");
+			timeRangeLabelElement.innerHTML = timeRangeLabel;
+			var timeRangeElement = document.createElement("dd");
+			timeRangeElement.setAttribute("class", "searchable-content");
+			timeRangeElement.innerHTML = timeRange;
+
+			dlRightContainer.appendChild(timeRangeLabelElement);
+			dlRightContainer.appendChild(timeRangeElement);
+
+			resultRightContainer.appendChild(dlRightContainer);
+
+			resultDisplayContainer.appendChild(resultLeftContainer);
+			resultDisplayContainer.appendChild(resultRightContainer);
+
+			result.appendChild(resultDisplayContainer);
+
+			document.getElementById("results-container").appendChild(result);
+		}
 	}
 };

@@ -1,3 +1,17 @@
+.hidden {
+ display: none;
+}
+.not-in-page {
+	   display: none;
+}
+
+.list-pager {
+	   display: inline-block;
+}
+.list-pager * {
+	   display: inline !important;
+}
+
 .float-left{
   float:left;
 }
@@ -5,12 +19,9 @@
   float:right;
 }
 
-.hidden {
-  display: none;
-}
-
 .results-container {
-  display: inline-block;
+}
+.result {
 }
 .result-shown{
   width:100%;
@@ -39,6 +50,9 @@ dd {
   margin-left:0px;
 }
 
+.blue-highlight {
+  background-color: #9cc2e3;
+}
 .highlight {
   background-color: yellow;  
 }
