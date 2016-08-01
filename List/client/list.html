@@ -3,12 +3,12 @@
 </head>
 
 <body>
- 	<h1>List</h1>
 	{{> list}}
 </body>
 
 <template name="list">
 	<div>
+		<label>Sort:</label>
 		<select id="sort">
 			<option value="1">A-Z</option>
 			<option value="2">Z-A</option>
@@ -17,6 +17,7 @@
 		</select>
 	</div>
 	<div>
+		<label>Search:</label>
 		<input type="text" id="search" />
 	</div>
 	<div>
@@ -24,6 +25,12 @@
 		<input type="number" id="set-mod" />
 		<input type="button" id="btn-set-mod" value="Set Mod" />
 	</div>
+	<br />
+	<div class="list-pager">
+		<input type="button" class="list-btn-prev" value="Prev" />
+		<label class="list-lbl-mod"></label>
+		<input type="button" class="list-btn-next" value="Next" />
+   </div>
 	<div id="results-container" class="results-container">
 		<div class="result" data-sort-key='{"alpha":"A2011 CPER Herbaceous Biomass and LAI prototype","numeric":"2011"}'>
 			<div class="result-shown">
@@ -101,6 +108,7 @@
 			</div>
 		</div>
 	</div>
+	<br />
 	<div class="list-pager">
 		<input type="button" class="list-btn-prev" value="Prev" />
 		<label class="list-lbl-mod"></label>

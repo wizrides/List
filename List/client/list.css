@@ -6,7 +6,6 @@
 }
 
 .list-pager {
-	   display: inline-block;
 }
 .list-pager * {
 	   display: inline !important;
@@ -20,6 +19,8 @@
 }
 
 .results-container {
+  width: 100%;
+  display: inline-block;
 }
 .result {
 }

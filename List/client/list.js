@@ -37,38 +37,25 @@ ListInterface = {
 
 	Init: function () {
 		ListInterface.Mod = ListInterface.Defaults.Mod;
+		
+		ListInterface.InitControls();
+		ListInterface.InitResults();
+
+		ListInterface.Rebuild(true, false, false);
+	},
+
+	InitControls: function () {
 		$("#sort").on("change", function () {
 			$("#results-container").find("div.result").removeClass("hidden");
-			ListInterface.Sort(parseInt($(this).val()));
-			ListInterface.Search($("#search").val());
-			ListInterface.BuildMods(true);
-			ListInterface.ApplyMod();
+			ListInterface.Rebuild(true, true, true);
 		});
 		$("#search").on("keyup", function () {
-			ListInterface.Search($(this).val());
-			ListInterface.BuildMods(true);
-			ListInterface.ApplyMod();
+			ListInterface.Rebuild(false, true, true);
 		});	
 		$("#search-button").click(function (e) {
 			e.preventDefault();
-			ListInterface.Search($("#search").val());
-			ListInterface.BuildMods(true);
-			ListInterface.ApplyMod();
+			ListInterface.Rebuild();
 		});
-
-		$("#results-container").find("div.result").each(function (index, element) {
-			$(this).on("click", function () {
-				console.log($(this).attr("data-sort-key"));
-			});
-		});
-
-		$("#results-container").find("div.result").each(function () {
-	    	$(this).find(".searchable-content").each(function () {
-				$(this).data("data-searchable-content", $(this).text());
-			});
-		});
-
-		ListInterface.Sort(parseInt($("#sort").val()));
 
 		$(".list-btn-prev").on("click", function () {
 			ListInterface.ModIndex = ListInterface.ModIndex - 1;
@@ -78,8 +65,38 @@ ListInterface = {
 			ListInterface.ModIndex += 1;
 			ListInterface.ApplyMod();
 		});
+	},
 
-		ListInterface.BuildMods(false);
+	InitResults: function () {
+		$("#results-container").find("div.result").each(function (index, element) {
+			$(this).on("click", function () {
+				console.log($(this).attr("data-sort-key"));
+			});
+	    	$(this).find(".searchable-content").each(function () {
+				$(this).data("data-searchable-content", $(this).text());
+			});
+		});
+	},
+
+	Rebuild: function (sort, filter, filteredOnly) {
+		if (typeof sort !== "boolean") {
+			sort = false;
+		}
+		if (typeof filter !== "boolean") {
+			filter = false;
+		}
+		if (typeof filteredOnly !== "boolean") {
+			filteredOnly = false;
+		}
+
+		if (sort) {
+			ListInterface.Sort(parseInt($("#sort").val()));
+		}
+		if (filter) {
+			ListInterface.Search($("#search").val());
+		}
+
+		ListInterface.BuildMods(filteredOnly);
 		ListInterface.ApplyMod();
 	},
 
@@ -186,9 +203,11 @@ ListInterface = {
 
 		if(numVisible > 0) {
 			if(numVisible != numItems) {
-				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " + (numVisible) + " results (" + (numItems) + " total)");
+				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " 
+					+ (numVisible) + " results (" + (numItems) + " total)");
 			} else {
-				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " + (numVisible) + " items");
+				$(".list-lbl-mod").text("Showing " + (startIndex + 1) + " to " + (startIndex + numInPage) + " of " 
+					+ (numVisible) + " items");
 			}
 		} else {
 			$(".list-lbl-mod").text("No results");
