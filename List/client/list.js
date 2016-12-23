@@ -283,7 +283,7 @@ ListInterface = {
 			var oldModIndex = ListInterface.ModIndex;
 			var newModIndex = Math.floor(((oldModIndex * oldMod) / newMod));
 		}
-		
+
 		ListInterface.Mod = newMod;
 		ListInterface.ModIndex = newModIndex;
 
@@ -565,7 +565,7 @@ ListInterfaceHelper = {
 			}
 		});
 
-		var count = 2000;
+		var count = 500;
 		for (var i = 1; i <= count; i++) {
 			var title = "Title " + i;
 			var subTitle = "Sub Title " + i;
